@@ -1,0 +1,183 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+// Coordonnée relative d'une case de la pièce
+type Point struct{ x, y int }
+
+// Lit les pièces du fichier sample.txt et les convertit en tableaux de points
+func readPieces(filename string) ([][]Point, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var pieces [][]Point
+
+	for {
+		var block []string
+		for i := 0; i < 4; i++ {
+			if !scanner.Scan() {
+				break
+			}
+			line := scanner.Text()
+			block = append(block, line)
+		}
+		if len(block) < 4 {
+			break // fin du fichier ou pièce incomplète
+		}
+
+		// Trouver les coordonnées des '#' dans le bloc
+		points := []Point{}
+		for y := 0; y < 4; y++ {
+			for x := 0; x < 4; x++ {
+				if len(block[y]) > x && block[y][x] == '#' {
+					points = append(points, Point{x, y})
+				}
+			}
+		}
+
+		if len(points) == 0 {
+			// Si pas de '#' on ignore
+			continue
+		}
+
+		// Normaliser les points pour que la pièce commence en (0,0)
+		minX, minY := points[0].x, points[0].y
+		for _, p := range points {
+			if p.x < minX {
+				minX = p.x
+			}
+			if p.y < minY {
+				minY = p.y
+			}
+		}
+		for i := range points {
+			points[i].x -= minX
+			points[i].y -= minY
+		}
+
+		pieces = append(pieces, points)
+
+		// Lire la ligne vide entre les blocs (si elle existe)
+		scanner.Scan()
+		if err := scanner.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return pieces, nil
+}
+
+// Vérifie si on peut placer la pièce à (x, y)
+func canPlace(grid [][]rune, piece []Point, x, y int) bool {
+	n := len(grid)
+	for _, p := range piece {
+		nx, ny := x+p.x, y+p.y
+		if nx < 0 || ny < 0 || nx >= n || ny >= n {
+			return false
+		}
+		if grid[ny][nx] != '.' {
+			return false
+		}
+	}
+	return true
+}
+
+// Place ou enlève la pièce dans la grille
+func placePiece(grid [][]rune, piece []Point, x, y int, char rune) {
+	for _, p := range piece {
+		nx, ny := x+p.x, y+p.y
+		grid[ny][nx] = char
+	}
+}
+
+// Résolution par backtracking
+func solve(grid [][]rune, pieces [][]Point, chars []rune, index int) bool {
+	if index == len(pieces) {
+		return true
+	}
+	n := len(grid)
+	piece := pieces[index]
+	char := chars[index]
+
+	for y := 0; y < n; y++ {
+		for x := 0; x < n; x++ {
+			if canPlace(grid, piece, x, y) {
+				placePiece(grid, piece, x, y, char)
+				if solve(grid, pieces, chars, index+1) {
+					return true
+				}
+				placePiece(grid, piece, x, y, '.') // backtrack
+			}
+		}
+	}
+	return false
+}
+
+// Agrandit la grille de 1 en largeur et hauteur
+func increaseGrid(grid [][]rune) [][]rune {
+	n := len(grid) + 1
+	newGrid := make([][]rune, n)
+	for i := range newGrid {
+		newGrid[i] = make([]rune, n)
+		for j := range newGrid[i] {
+			newGrid[i][j] = '.'
+		}
+	}
+	return newGrid
+}
+
+// Affiche la grille
+func printGrid(grid [][]rune) {
+	for _, row := range grid {
+		for _, c := range row {
+			fmt.Printf("%c", c)
+		}
+		fmt.Println()
+	}
+	fmt.Println()
+}
+
+func main() {
+	pieces, err := readPieces("sample.txt")
+	if err != nil {
+		fmt.Println("Erreur lecture fichier:", err)
+		return
+	}
+	if len(pieces) == 0 {
+		fmt.Println("Aucune pièce trouvée dans sample.txt")
+		return
+	}
+
+	// Attribution des caractères pour afficher les pièces (A, B, C, ...)
+	chars := make([]rune, len(pieces))
+	for i := range chars {
+		chars[i] = rune('A' + i)
+	}
+
+	size := 2
+	grid := make([][]rune, size)
+	for i := range grid {
+		grid[i] = make([]rune, size)
+		for j := range grid[i] {
+			grid[i][j] = '.'
+		}
+	}
+
+	for {
+		if solve(grid, pieces, chars, 0) {
+			fmt.Printf("Solution trouvée dans une grille de taille %d :\n", len(grid))
+			printGrid(grid)
+			break
+		} else {
+			grid = increaseGrid(grid)
+		}
+	}
+}

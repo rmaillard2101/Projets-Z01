@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="Risitas.ico" />
+  </head>
+  <body>
+    <div id="pauseOverlay">
+      <div id="pauseBox">
+        ПАУЗА
+        <button class="pauseOverlayBtn" id="pauseRestart">РЕСТАРТ</button>
+        <button class="pauseOverlayBtn" id="pauseResume">РЫЗЮМ</button>
+      </div>
+    </div>
+    <div id="gameOverBox">ГАЙМ ОВЭPЬ</div>
+    <button id="pauseButton" class="pause-button">ПАУЗА</button>
+    <div id="container">
+      <div id="left">
+        <div id="timer" class="left-item">
+          ТАЙМЕР: <span id="timerValue">00:00:00</span>
+        </div>
+        <div id="lvl" class="left-item">
+          ЛИВЭЛ: <span id="lvlValue">1</span>
+        </div>
+        <div id="score" class="left-item">
+          СКОР: <span id="scoreValue">0</span>
+        </div>
+      </div>
+      <div id="grid"></div>
+      <div id="right">
+        <button id="playButton" class="right-item">ПЛЕЙ / РЕСТАРТ</button>
+        <div id="nextPreview"></div>
+      </div>
+    </div>
+    <div id="fps">FPS: <span id="fpsValue">0</span></div>
+    <script src="script.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+0 0 Alice 0 10/10/2012 Africa 291321234 26333.52 saving
+
+1 1 Michel 2 2/5/2001 Portugal 123543455 10023.23 fixed01
+
+2 1 Michel 123 10/10/2020 UK 1234123 12345.30 saving
+
+3 2 Joe 0 7/23/2025 Kekistan 361569 100.00 current
+
+4 0 Alice 1 7/25/2025 USA 1234 5000.00 fixed01
+
+5 1 Joe 1 7/25/2025 CanadaTabarnak 3615 3000.00 current
+
+6 1 Joe 2 8/18/2025 USofA 3615 10000.00 saving
+
+8 1 Michel 3212 10/10/2012 UK 291231392 1001.20 fixed03
+

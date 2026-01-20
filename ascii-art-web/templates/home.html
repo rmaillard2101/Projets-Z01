@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ASCII Art</title>
+    <link rel="icon" type="image/x-icon" href="../static/logo.png">
+    <link href="../static/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="title">
+        <h1>Bienvenue !</h1>
+        <p id="presentation">Transformez vos phrases favorites en oeuvres d'art du style d'écriture de votre choix grâce à notre programme "ASCII Art".</p>
+    </div>
+
+    <form id="phraseForm" name="form"> 
+        <div>
+            <label id="input"><b>Entrez votre phrase :</b></label>
+            <textarea id="phrase" name="phrase" required></textarea><br><br>
+        </div>
+        <div id="righttab">
+            <label id="label1" onclick="coloring1();"><input type="radio" value="shadow" name="banner"/>Shadow</label>
+            <label id="label2" class="selected" onclick="coloring2();"><input type="radio" value="standard" name="banner" checked/>Standard</label>
+            <label id="label3" onclick="coloring3();"><input type="radio" value="thinkertoy" name="banner"/>Thinkertoy</label>
+            
+        </div>
+        <button onclick="coloringsb()" type="submit" id="sendbutton">Envoyer</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <script>
+        document.getElementById("phraseForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const phrase = document.getElementById("phrase").value;
+            const banner = form.banner.value;
+
+            fetch("/api/transform", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "phrase=" + encodeURIComponent(phrase) + "&banner=" + encodeURIComponent(banner)
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("result").innerText = data;
+            })
+            .catch(err => {
+                document.getElementById("result").innerText = "Erreur : " + err;
+            });
+        });
+
+        //Indiquer la sélection de banner
+        function coloring1(){
+            document.getElementById("label1").classList.add("selected");
+            document.getElementById("label2").classList.remove("selected");
+            document.getElementById("label3").classList.remove("selected");
+        }
+        function coloring2(){
+            document.getElementById("label1").classList.remove("selected");
+            document.getElementById("label2").classList.add("selected");
+            document.getElementById("label3").classList.remove("selected");
+        }
+        function coloring3(){
+            document.getElementById("label1").classList.remove("selected");
+            document.getElementById("label2").classList.remove("selected");
+            document.getElementById("label3").classList.add("selected");
+        }
+
+        //Indiquer le clique sur le bouton envoyer
+        function attendre(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        async function coloringsb(){
+            document.getElementById("sendbutton").classList.add("selected");
+            await attendre(100);
+            document.getElementById("sendbutton").classList.remove("selected");
+        }
+
+    </script>
+</body>
+</html>

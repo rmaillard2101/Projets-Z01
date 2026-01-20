@@ -1,0 +1,669 @@
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	var damier [][]byte
+	//var ligne []byte
+	var damiervide [][]byte
+	var lignevide []byte
+	var masquedamier [][]byte
+	//var masqueligne []byte
+	xcentre := 6
+	ycentre := 6
+	var bordg int
+	var bordd int
+	var bords int
+	var bordi int
+	for i := 0; i < xcentre+xcentre+1; i++ {
+		lignevide = append(lignevide, '.')
+	}
+
+	for i := 0; i < ycentre+ycentre+1; i++ {
+		ligne := make([]byte, len(lignevide))
+		copy(ligne, lignevide)
+		damiervide = append(damiervide, ligne)
+	}
+
+	for i := 0; i < len(damiervide); i++ {
+		ligne := make([]byte, len(damiervide[i]))
+		copy(ligne, damiervide[i])
+		damier = append(damier, ligne)
+	}
+
+	for i := 0; i < len(damiervide); i++ {
+		ligne := make([]byte, len(damiervide[i]))
+		copy(ligne, damiervide[i])
+		masquedamier = append(masquedamier, ligne)
+	}
+
+	fichier, _ := os.ReadFile("sample.txt")
+	numtetros := 0
+
+	for i := 0; i < len(fichier); i++ {
+		if i > 1 {
+			if fichier[i] == '\n' && (i == len(fichier)-1 || fichier[i-1] == '\n') {
+				numtetros++
+			}
+		}
+	}
+
+	for CompteurPosés := 0; CompteurPosés < numtetros; CompteurPosés++ {
+
+		//vide := true
+		for i := 0; i < ycentre+ycentre+1; i++ {
+			for j := 0; j < xcentre+xcentre+1; j++ {
+				if damier[i][j] == '.' {
+					if i > 0 && damier[i-1][j] >= 'A' && damier[i-1][j] <= 'Z' {
+						masquedamier[i][j] = '/'
+						//vide = false
+					} else if i < ycentre+ycentre && damier[i+1][j] >= 'A' && damier[i+1][j] <= 'Z' {
+						masquedamier[i][j] = '/'
+						//vide = false
+					} else if j > 0 && damier[i][j-1] >= 'A' && damier[i][j-1] <= 'Z' {
+						masquedamier[i][j] = '/'
+						//vide = false
+					} else if j < xcentre+xcentre && damier[i][j+1] >= 'A' && damier[i][j+1] <= 'Z' {
+						masquedamier[i][j] = '/'
+						//vide = false
+					}
+				}
+			}
+		}
+
+		var tetro [][]byte
+		var tetroligne []byte
+		numtetro := 0
+		for i := 0; i < len(fichier); i++ {
+			if numtetro == CompteurPosés {
+				if fichier[i] == '.' || fichier[i] == '#' {
+					tetroligne = append(tetroligne, fichier[i])
+				} else if fichier[i] == '\n' && len(tetroligne) > 0 {
+					tetro = append(tetro, tetroligne)
+					tetroligne = nil
+				}
+			}
+			if i > 1 {
+				if fichier[i] == '\n' && fichier[i-1] == '\n' {
+					numtetro++
+				}
+				if numtetro > CompteurPosés {
+					break
+				}
+			}
+		}
+
+		limxi := 0
+		limximodif := false
+		limxe := 0
+		limxemodif := false
+		limyi := 0
+		limyimodif := false
+		limye := 0
+		limyemodif := false
+		for i := 0; i < len(tetro); i++ {
+			LigneVide := true
+			SurDiese := false
+			for j := 0; j < len(tetro[i]); j++ {
+				if tetro[i][j] == '#' {
+					LigneVide = false
+					if SurDiese == false {
+						if limximodif == false {
+							limxi = j
+							limximodif = true
+						} else if limximodif == true {
+							if limxi > j {
+								limxi = j
+							}
+						}
+
+					}
+					SurDiese = true
+					if j == len(tetro[i])-1 && SurDiese == true {
+						limxe = j
+						limxemodif = true
+					}
+				} else if tetro[i][j] == '.' {
+					if SurDiese == true {
+						if limxemodif == false {
+							limxe = j - 1
+							limxemodif = true
+						} else if limxemodif == true {
+							if limxe < j-1 {
+								limxe = j - 1
+							}
+						}
+					}
+					SurDiese = false
+				}
+			}
+			if LigneVide == false && limyimodif == false {
+				limyi = i
+				limyimodif = true
+			} else if LigneVide == true && limyimodif == true && limyemodif == false {
+				limye = i - 1
+				limyemodif = true
+			}
+			if i == len(tetro)-1 && limyemodif == false {
+				limye = i
+				limyemodif = true
+			}
+
+		}
+
+		var tetroredimmensionne [][]byte
+		for i := limyi; i <= limye; i++ {
+			var lignetetroredimmensionne []byte
+			for j := limxi; j <= limxe; j++ {
+				lignetetroredimmensionne = append(lignetetroredimmensionne, tetro[i][j])
+			}
+			tetroredimmensionne = append(tetroredimmensionne, lignetetroredimmensionne)
+		}
+
+		if CompteurPosés == 0 {
+			bordg = xcentre - (len(tetroredimmensionne[0]) / 2)
+			bordd = xcentre + (len(tetroredimmensionne[0])/2 - 1 + (len(tetroredimmensionne[0]) % 2))
+			bords = ycentre - (len(tetroredimmensionne) / 2)
+			bordi = ycentre + (len(tetroredimmensionne)/2 - 1 + (len(tetroredimmensionne) % 2))
+			for i := 0; i < len(tetroredimmensionne); i++ {
+				for j := 0; j < len(tetroredimmensionne[i]); j++ {
+					if tetroredimmensionne[i][j] == '#' {
+						damier[i+bords][j+bordg] = byte(int('A') + CompteurPosés)
+					}
+				}
+			}
+		} else {
+			atrouve := false
+			var coordx int
+			var coordy int
+			var nbex int
+			var extype string
+			for atrouve == false {
+				//fmt.Println(nbex)
+				for i := bords; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("nope")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "nope"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("gauche")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "gauche"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("superieur")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "superieur"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("droit")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "droit"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("inferieur")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "inferieur"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("superieur gauche")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "superieur gauche"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("inferieur gauche")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "inferieur gauche"
+							fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("superieur droit")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "superieur droit"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("inferieur droit")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "inferieur droit"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("tout sauf droite")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "tout sauf droit"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("tout sauf inferieur")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "tout sauf inferieur"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("tout sauf gauche")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "tout sauf gauche"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("tout sauf superieur")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "tout sauf superieur"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				for i := bords - nbex; i <= bordi+nbex-(len(tetroredimmensionne)-1); i++ {
+					for j := bordg - nbex; j <= bordd+nbex-(len(tetroredimmensionne[0])-1); j++ {
+						//fmt.Println("tout")
+						superposition := false
+						surmasque := false
+						for k := 0; k < len(tetroredimmensionne); k++ {
+							for l := 0; l < len(tetroredimmensionne[k]); l++ {
+								if tetroredimmensionne[k][l] == '#' {
+									if damier[i+k][j+l] >= 'A' && damier[i+k][j+l] <= 'Z' {
+										superposition = true
+									}
+									if masquedamier[i+k][j+l] >= '/' {
+										surmasque = true
+									}
+								}
+							}
+						}
+						if superposition == false && surmasque == true {
+							atrouve = true
+							coordx = j
+							coordy = i
+							extype = "tout"
+							//fmt.Println(extype)
+							goto valide
+						}
+					}
+				}
+
+				nbex++
+			}
+		valide:
+			switch extype {
+			case "gauche":
+				bordg = bordg - nbex
+			case "droit":
+				bordd = bordd + nbex
+			case "superieur":
+				bords = bords - nbex
+			case "inferieur":
+				bordi = bordi + nbex
+			case "superieur gauche":
+				bordg = bordg - nbex
+				bords = bords - nbex
+			case "inferieur gauche":
+				bordg = bordg - nbex
+				bordi = bordi + nbex
+			case "superieur droit":
+				bordd = bordd + nbex
+				bords = bords - nbex
+			case "inferieur droit":
+				bordd = bordd + nbex
+				bordi = bordi + nbex
+			case "tout sauf droit":
+				bordg = bordg - nbex
+				bords = bords - nbex
+				bordi = bordi + nbex
+			case "tout sauf inferieur":
+				bordg = bordg - nbex
+				bordd = bordd + nbex
+				bords = bords - nbex
+			case "tout sauf gauche":
+				bordd = bordd + nbex
+				bords = bords - nbex
+				bordi = bordi + nbex
+			case "tout sauf superieur":
+				bordg = bordg - nbex
+				bordd = bordd + nbex
+				bordi = bordi + nbex
+			case "tout":
+				bordg = bordg - nbex
+				bordd = bordd + nbex
+				bords = bords - nbex
+				bordi = bordi + nbex
+			default:
+
+			}
+			if atrouve == true {
+				//fmt.Println(string(byte(int('A') + CompteurPosés)))
+				for k := 0; k < len(tetroredimmensionne); k++ {
+					for l := 0; l < len(tetroredimmensionne[0]); l++ {
+						if tetroredimmensionne[k][l] == '#' {
+							//fmt.Println(string(byte(int('A') + CompteurPosés)))
+							damier[coordy+k][coordx+l] = byte(int('A') + CompteurPosés)
+						}
+					}
+				}
+			}
+
+		}
+
+		/*for i := 0; i < len(tetro); i++ {
+			fmt.Println(string(tetro[i]))
+		}
+
+		for i := 0; i < len(tetroredimmensionne); i++ {
+			fmt.Println(string(tetroredimmensionne[i]))
+		}*/
+		masquedamier = nil
+		for i := 0; i < len(damiervide); i++ {
+			ligne := make([]byte, len(damiervide[i]))
+			copy(ligne, damiervide[i])
+			masquedamier = append(masquedamier, ligne)
+		}
+	}
+
+	for i := bords; i <= bordi; i++ {
+		var printligne []byte
+		for j := bordg; j <= bordd; j++ {
+			printligne = append(printligne, damier[i][j])
+		}
+		fmt.Println(string(printligne))
+	}
+
+	/*fmt.Println("-       -")
+
+	for i := 0; i < ycentre+ycentre+1; i++ {
+		fmt.Println(string(masquedamier[i]))
+	}*/
+}
